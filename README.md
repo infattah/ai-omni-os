@@ -36,6 +36,12 @@ The tmux backend is the default. Install tmux with `brew install tmux` (macOS) o
 Requires Node.js 20 or newer.
 
 ```bash
+npx ai-omni-os
+```
+
+Or run from source:
+
+```bash
 git clone https://github.com/infattah/ai-omni-os.git
 cd ai-omni-os
 npm install
@@ -90,7 +96,6 @@ client/        — React 19 + Vite dashboard
 
 - Windows launch backend
 - Enable the remaining harnesses (Codex, Gemini CLI, opencode)
-- `npx ai-omni-os` packaged install
 - Headless/SDK delivery path behind the existing delivery seam
 
 ## License

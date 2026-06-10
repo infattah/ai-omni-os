@@ -70,15 +70,17 @@ export function deriveTerminalAttached(
   return tmuxAttached();
 }
 
-function loadClientHtml(): string {
+// Built client lives next to the compiled server when installed from npm,
+// and under the repo root during development; cwd is the dev-server fallback.
+function clientDistDir(): string {
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-  const candidates = [
-    path.join(moduleDir, '../../dist/client/index.html'),
-    path.join(process.cwd(), 'dist/client/index.html'),
-  ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return fs.readFileSync(c, 'utf-8');
-  }
+  const candidates = [path.join(moduleDir, '../../dist/client'), path.join(process.cwd(), 'dist/client')];
+  return candidates.find((c) => fs.existsSync(path.join(c, 'index.html'))) ?? candidates[0];
+}
+
+function loadClientHtml(): string {
+  const htmlPath = path.join(clientDistDir(), 'index.html');
+  if (fs.existsSync(htmlPath)) return fs.readFileSync(htmlPath, 'utf-8');
   console.warn('client/index.html not found -- using fallback');
   return '<html><body><h1>Omni</h1><p>UI file not found.</p></body></html>';
 }
@@ -196,7 +198,7 @@ export function createServer(port: number): Promise<OmniServer> {
 
     const httpServer = http.createServer((req, res) => {
       const requestPath = new URL(req.url || '/', `http://${host}`).pathname;
-      const builtAssetPath = path.join(process.cwd(), 'dist/client', requestPath);
+      const builtAssetPath = path.join(clientDistDir(), requestPath);
 
       if (requestPath === '/' || requestPath === '/index.html') {
         // Read index.html per request so a client rebuild is picked up on refresh

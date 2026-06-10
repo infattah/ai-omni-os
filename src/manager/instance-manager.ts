@@ -335,7 +335,7 @@ export class InstanceManager implements AgentLifecyclePort {
       end tell
     `;
 
-    this.childProcess.spawn('osascript', ['-e', appleScript]);
+    this.spawnDetached('osascript', ['-e', appleScript]);
 
     const managed: ManagedInstance = {
       info: { id, name: opts.name, status: 'active', harness: opts.harness },
@@ -368,7 +368,7 @@ export class InstanceManager implements AgentLifecyclePort {
     const window = tmuxWindowName(opts.name);
 
     const sessionExisted = tmuxHasSession(session, this.childProcess.execSync);
-    this.childProcess.spawn('tmux', buildTmuxLaunchArgs(session, window, shellCmd, sessionExisted), {
+    this.spawnDetached('tmux', buildTmuxLaunchArgs(session, window, shellCmd, sessionExisted), {
       stdio: 'ignore',
     });
     this.focusTmuxTargetForRepo(opts.cwd, { session, window });
@@ -387,7 +387,18 @@ export class InstanceManager implements AgentLifecyclePort {
     return managed.info;
   }
 
+  // Fire-and-forget spawn that degrades gracefully (warn, don't crash) when the binary is missing,
+  // e.g. osascript on Linux or tmux when it isn't installed.
+  private spawnDetached(command: string, args: string[], opts?: Parameters<typeof spawn>[2]): void {
+    const proc = opts ? this.childProcess.spawn(command, args, opts) : this.childProcess.spawn(command, args);
+    proc?.on?.('error', (err: Error) => {
+      console.warn(`[omni] ${command} unavailable: ${err.message}`);
+    });
+  }
+
   private openTerminalAttachedToTmux(session: string): void {
+    // Opening Terminal.app via AppleScript only exists on macOS; elsewhere the Dev attaches manually.
+    if (process.platform !== 'darwin') return;
     const escaped = appleScriptQuote(buildTmuxAttachCommand(session));
     const appleScript = `
       tell application "Terminal"
@@ -396,7 +407,7 @@ export class InstanceManager implements AgentLifecyclePort {
         set custom title of newWin to "Omni tmux: ${appleScriptQuote(session)}"
       end tell
     `;
-    this.childProcess.spawn('osascript', ['-e', appleScript]);
+    this.spawnDetached('osascript', ['-e', appleScript]);
   }
 
   private repoAttachedClient(repoPath: string): string | null {
@@ -707,7 +718,7 @@ export class InstanceManager implements AgentLifecyclePort {
     // Close only this agent's window. tmux: kill-window (the session dies with its last window).
     if (inst.tmuxTarget) {
       try {
-        this.childProcess.spawn('tmux', buildTmuxKillWindowArgs(tmuxTargetRef(inst.tmuxTarget)), {
+        this.spawnDetached('tmux', buildTmuxKillWindowArgs(tmuxTargetRef(inst.tmuxTarget)), {
           stdio: 'ignore',
         });
       } catch {}
@@ -724,7 +735,7 @@ export class InstanceManager implements AgentLifecyclePort {
           ].join('\n'),
           'utf-8',
         );
-        this.childProcess.spawn('osascript', [closeScript], { stdio: 'ignore' });
+        this.spawnDetached('osascript', [closeScript], { stdio: 'ignore' });
         try {
           fs.unlinkSync(closeScript);
         } catch {}

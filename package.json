@@ -1,0 +1,67 @@
+{
+  "name": "ai-omni-os",
+  "version": "0.1.0",
+  "description": "Local interoperability hub for AI CLI agents — coordinate any harness (Claude Code, Pi, Codex, Gemini, opencode) from one dashboard: agent-to-agent and agent-to-developer.",
+  "main": "dist/index.js",
+  "bin": {
+    "omni": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inagentai/ai-omni-os.git"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run && playwright test",
+    "test:watch": "vitest",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "tsc",
+    "build:client": "vite build",
+    "dev": "npm run build:client && tsx src/index.ts",
+    "dev:server": "tsx src/index.ts",
+    "dev:client": "vite --host 127.0.0.1"
+  },
+  "keywords": [
+    "ai-agents",
+    "agent-interoperability",
+    "claude-code",
+    "mcp",
+    "multi-agent",
+    "cli-agents",
+    "coordination"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "^12.10.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "typebox": "^1.1.39",
+    "ws": "^8.20.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16",
+    "@playwright/test": "^1.60.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.8.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^29.1.1",
+    "tsx": "^4.22.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14",
+    "vitest": "^4.1.6"
+  }
+}

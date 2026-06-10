@@ -72,9 +72,7 @@ export function LaunchModal({
     {
       value: 'terminal',
       label: 'Terminal.app',
-      hint: launchBackends.terminal
-        ? 'One macOS Terminal window per agent'
-        : 'Available on macOS only',
+      hint: launchBackends.terminal ? 'One macOS Terminal window per agent' : 'Available on macOS only',
       disabled: !launchBackends.terminal,
     },
   ];

@@ -415,12 +415,13 @@ export function createServer(port: number): Promise<OmniServer> {
             ws.on('close', () => {
               if (connectorAgentName) {
                 connectors.delete(connectorAgentName);
-                presenceByAgentName.set(connectorAgentName, {
+                const disconnectedPresence: AgentPresence = {
                   connectionStatus: 'disconnected',
                   workStatus: 'unknown',
                   lastSeenAt: new Date().toISOString(),
-                });
-                broadcastAgentPresence(connectorAgentName, presenceByAgentName.get(connectorAgentName)!);
+                };
+                presenceByAgentName.set(connectorAgentName, disconnectedPresence);
+                broadcastAgentPresence(connectorAgentName, disconnectedPresence);
                 recordActivity('presence.disconnected', `${connectorAgentName} disconnected`, {
                   agentName: connectorAgentName,
                 });

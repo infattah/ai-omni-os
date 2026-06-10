@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inagentai/ai-omni-os.git"
+    "url": "git+https://github.com/infattah/ai-omni-os.git"
   },
   "scripts": {
     "test": "vitest run",

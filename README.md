@@ -36,7 +36,7 @@ The tmux backend is the default. Install tmux with `brew install tmux` (macOS) o
 Requires Node.js 20 or newer.
 
 ```bash
-git clone https://github.com/inagentai/ai-omni-os.git
+git clone https://github.com/infattah/ai-omni-os.git
 cd ai-omni-os
 npm install
 npm run dev

@@ -32,7 +32,7 @@ describe('InstanceManager', () => {
 
   it('reopens a live tmux session by attaching Terminal.app without creating a duplicate window', () => {
     const childProcess = { spawn: vi.fn(), execSync: vi.fn(), execFileSync: vi.fn() };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.reopenTerminal(tmuxCreateOptions());
 
@@ -40,6 +40,15 @@ describe('InstanceManager', () => {
     expect(childProcess.spawn).toHaveBeenCalledTimes(1);
     expect(childProcess.spawn.mock.calls[0][0]).toBe('osascript');
     expect(childProcess.spawn.mock.calls.some((call) => call[0] === 'tmux')).toBe(false);
+  });
+
+  it('never tries to open Terminal.app on non-mac platforms', () => {
+    const childProcess = { spawn: vi.fn(), execSync: vi.fn(), execFileSync: vi.fn() };
+    const mgr = new InstanceManager(childProcess as never, 'linux');
+
+    mgr.reopenTerminal(tmuxCreateOptions());
+
+    expect(childProcess.spawn.mock.calls.some((call) => call[0] === 'osascript')).toBe(false);
   });
 
   it('relaunches a tmux agent when its session is gone', () => {
@@ -50,7 +59,7 @@ describe('InstanceManager', () => {
       }),
       execFileSync: vi.fn(),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.reopenTerminal(tmuxCreateOptions());
 
@@ -105,7 +114,7 @@ describe('InstanceManager', () => {
   it('launches Terminal.app through a temp command file so JSON args are not embedded in AppleScript', () => {
     const childProcess = { spawn: vi.fn(), execSync: vi.fn(), execFileSync: vi.fn() };
     const writeFile = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
     const opts = {
       id: 'claude-terminal',
       name: 'claude-terminal',
@@ -136,7 +145,7 @@ describe('InstanceManager', () => {
   it('still launches a simple Terminal.app harness through the command file', () => {
     const childProcess = { spawn: vi.fn(), execSync: vi.fn(), execFileSync: vi.fn() };
     const writeFile = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.create({
       id: 'pi-terminal',
@@ -274,7 +283,7 @@ describe('InstanceManager', () => {
       execSync: vi.fn(),
       execFileSync: vi.fn(() => Buffer.from('client1\n')),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     expect(buildTmuxListClientsArgs('omni-pi-abc123')).toEqual(['list-clients', '-t', 'omni-pi-abc123']);
     expect(mgr.terminalAttached(tmuxCreateOptions())).toBe(true);
@@ -287,7 +296,7 @@ describe('InstanceManager', () => {
 
   it('reports a tmux session as detached when list-clients returns no clients', () => {
     const childProcess = { spawn: vi.fn(), execSync: vi.fn(), execFileSync: vi.fn(() => Buffer.from('')) };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     expect(mgr.terminalAttached(tmuxCreateOptions())).toBe(false);
   });
@@ -314,7 +323,7 @@ describe('InstanceManager', () => {
         return Buffer.from('');
       }),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.create({ ...tmuxCreateOptions(), id: 'pi1', name: 'pi-one', cwd: repo, harnessName: 'pi' });
     mgr.create({
@@ -354,7 +363,7 @@ describe('InstanceManager', () => {
         return Buffer.from('');
       }),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.create({ ...tmuxCreateOptions(), id: 'pi2', name: 'pi-two', cwd: repo, harnessName: 'pi' });
 
@@ -386,7 +395,7 @@ describe('InstanceManager', () => {
         return Buffer.from('');
       }),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.create({
       ...tmuxCreateOptions(),
@@ -431,7 +440,7 @@ describe('InstanceManager', () => {
         return Buffer.from('');
       }),
     };
-    const mgr = new InstanceManager(childProcess as never);
+    const mgr = new InstanceManager(childProcess as never, 'darwin');
 
     mgr.create({ ...tmuxCreateOptions(), id: 'pi1', name: 'pi-one', cwd: repo, harnessName: 'pi' });
     mgr.create({ ...tmuxCreateOptions(), id: 'pi2', name: 'pi-two', cwd: repo, harnessName: 'pi' });

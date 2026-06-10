@@ -187,7 +187,11 @@ export class InstanceManager implements AgentLifecyclePort {
   private instances = new Map<string, ManagedInstance>();
   private backendAvailability: { terminal: boolean; tmux: boolean } | null = null;
 
-  constructor(private childProcess: ChildProcessFns = defaultChildProcess) {}
+  constructor(
+    private childProcess: ChildProcessFns = defaultChildProcess,
+    // Injectable so tests exercise the macOS-only Terminal.app paths on any CI runner.
+    private platform: NodeJS.Platform = process.platform,
+  ) {}
 
   // Which interactive launch backends this machine can actually run. Probed once per server run:
   // tmux needs the binary on PATH, Terminal.app needs a macOS GUI.
@@ -200,7 +204,7 @@ export class InstanceManager implements AgentLifecyclePort {
     } catch {
       tmux = false;
     }
-    this.backendAvailability = { terminal: process.platform === 'darwin', tmux };
+    this.backendAvailability = { terminal: this.platform === 'darwin', tmux };
     return this.backendAvailability;
   }
 
@@ -398,7 +402,7 @@ export class InstanceManager implements AgentLifecyclePort {
 
   private openTerminalAttachedToTmux(session: string): void {
     // Opening Terminal.app via AppleScript only exists on macOS; elsewhere the Dev attaches manually.
-    if (process.platform !== 'darwin') return;
+    if (this.platform !== 'darwin') return;
     const escaped = appleScriptQuote(buildTmuxAttachCommand(session));
     const appleScript = `
       tell application "Terminal"
